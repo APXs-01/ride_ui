@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ffmpeg -version)",
+      "Bash(ffprobe -v quiet -print_format json -show_streams \"f:/WORK/WEB/Modern-frontend/ride/ezgif-27137d2aa7d47bbf.webm\")",
+      "Bash(mkdir -p \"f:/WORK/WEB/Modern-frontend/ride/public/frames\")",
+      "Bash(ffmpeg -i \"f:/WORK/WEB/Modern-frontend/ride/ezgif-27137d2aa7d47bbf.webm\" -vf \"fps=24\" -q:v 1 \"f:/WORK/WEB/Modern-frontend/ride/public/frames/frame_%04d.png\")"
+    ]
+  }
+}
