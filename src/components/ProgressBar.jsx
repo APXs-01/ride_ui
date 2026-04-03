@@ -1,4 +1,3 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 
 const PHASES = [
@@ -11,6 +10,7 @@ const PHASES = [
 
 export default function ProgressBar({ progress }) {
   const pct = Math.round(progress * 100)
+  if (window.innerWidth < 768) return null
 
   return (
     <div style={{

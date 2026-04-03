@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 
 import Navbar from './components/Navbar.jsx'
@@ -8,12 +8,19 @@ import VignetteOverlay from './components/VignetteOverlay.jsx'
 import ProgressBar from './components/ProgressBar.jsx'
 import PhaseLabel from './components/PhaseLabel.jsx'
 import ScrollIndicator from './components/ScrollIndicator.jsx'
-import {
-  Phase1, Phase2, Phase3, Phase4, Phase5
-} from './components/ScrollCopy.jsx'
 
 import { useScrollProgress } from './hooks/useScrollProgress.js'
 import { useFramePreload } from './hooks/useFramePreload.js'
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+  useEffect(() => {
+    const fn = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', fn)
+    return () => window.removeEventListener('resize', fn)
+  }, [])
+  return isMobile
+}
 
 export default function App() {
   const progress = useScrollProgress()
@@ -21,29 +28,23 @@ export default function App() {
 
   return (
     <>
-      {/* Loading screen */}
       <LoadingScreen loaded={loaded} total={total} ready={ready} />
 
-      {/* Fixed layer: canvas + overlays + UI chrome */}
       {ready && (
         <>
-          {/* 1. Canvas — bottom layer */}
           <CanvasSequence progress={progress} images={images} ready={ready} />
-
-          {/* 2. Cinematic vignette overlay */}
           <VignetteOverlay />
 
-          {/* 3. Scrollytelling copy — pinned text blocks */}
           <div style={{
             position: 'fixed',
             inset: 0,
             zIndex: 10,
             pointerEvents: 'none',
+            overflow: 'hidden',
           }}>
             <ScrollStoryText progress={progress} />
           </div>
 
-          {/* 4. UI chrome */}
           <Navbar />
           <ProgressBar progress={progress} />
           <PhaseLabel progress={progress} />
@@ -51,33 +52,41 @@ export default function App() {
         </>
       )}
 
-      {/* Scroll height container — creates the scrollable distance */}
       <div style={{ height: '500vh', position: 'relative', zIndex: 0 }} />
     </>
   )
 }
 
-// Pinned scroll copy that fades in/out based on scroll progress
 function ScrollStoryText({ progress }) {
   const pct = progress * 100
+  const isMobile = useIsMobile()
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
 
-      {/* PHASE 1: 0–15% — centered hero copy */}
-      <FadeSection visible={pct >= 0 && pct < 18} align="center">
+      {/* PHASE 1: 0–15% */}
+      <FadeSection visible={pct >= 0 && pct < 18} align="center" isMobile={isMobile}>
         <div style={{ textAlign: 'center' }}>
           <span style={styles.micro}>Zero Sugar · Zero Crash · Total Velocity</span>
-          <h1 style={styles.hero}>RIDE.</h1>
-          <p style={styles.tagline}>Fuel for the Infinite.</p>
+          <h1 style={{
+            ...styles.hero,
+            fontSize: isMobile ? 'clamp(56px,15vw,80px)' : 'clamp(80px,12vw,160px)',
+          }}>RIDE.</h1>
+          <p style={{
+            ...styles.tagline,
+            fontSize: isMobile ? '11px' : 'clamp(14px,1.8vw,22px)',
+          }}>Fuel for the Infinite.</p>
         </div>
       </FadeSection>
 
-      {/* PHASE 2: 15–40% — left */}
-      <FadeSection visible={pct >= 15 && pct < 43} align="left">
+      {/* PHASE 2: 15–40% */}
+      <FadeSection visible={pct >= 15 && pct < 43} align="left" isMobile={isMobile}>
         <div>
           <span style={styles.micro}>Phase II — Ignition</span>
-          <h2 style={{ ...styles.headlineLime, fontSize: 'clamp(38px,5.5vw,80px)' }}>
+          <h2 style={{
+            ...styles.headlineLime,
+            fontSize: isMobile ? 'clamp(28px,8vw,42px)' : 'clamp(38px,5.5vw,80px)',
+          }}>
             Bio-Available<br />Energy.
           </h2>
           <p style={styles.sub}>
@@ -87,11 +96,14 @@ function ScrollStoryText({ progress }) {
         </div>
       </FadeSection>
 
-      {/* PHASE 3: 40–65% — right */}
-      <FadeSection visible={pct >= 40 && pct < 68} align="right">
+      {/* PHASE 3: 40–65% */}
+      <FadeSection visible={pct >= 40 && pct < 68} align="right" isMobile={isMobile}>
         <div style={{ textAlign: 'right' }}>
           <span style={styles.micro}>Phase III — Recalibration</span>
-          <h2 style={{ ...styles.headlineCobalt, fontSize: 'clamp(38px,5.5vw,80px)' }}>
+          <h2 style={{
+            ...styles.headlineCobalt,
+            fontSize: isMobile ? 'clamp(28px,8vw,42px)' : 'clamp(38px,5.5vw,80px)',
+          }}>
             Rapid Cellular<br />Recovery.
           </h2>
           <p style={{ ...styles.sub, marginLeft: 'auto' }}>
@@ -101,11 +113,14 @@ function ScrollStoryText({ progress }) {
         </div>
       </FadeSection>
 
-      {/* PHASE 4: 65–85% — left */}
-      <FadeSection visible={pct >= 65 && pct < 88} align="left">
+      {/* PHASE 4: 65–85% */}
+      <FadeSection visible={pct >= 65 && pct < 88} align="left" isMobile={isMobile}>
         <div>
           <span style={styles.micro}>Phase IV — Sensory Overload</span>
-          <h2 style={{ ...styles.headlineLime, fontSize: 'clamp(38px,5.5vw,80px)' }}>
+          <h2 style={{
+            ...styles.headlineLime,
+            fontSize: isMobile ? 'clamp(28px,8vw,42px)' : 'clamp(38px,5.5vw,80px)',
+          }}>
             Aggressively<br />Crisp.
           </h2>
           <p style={styles.sub}>
@@ -115,18 +130,40 @@ function ScrollStoryText({ progress }) {
         </div>
       </FadeSection>
 
-      {/* PHASE 5: 85–100% — center impact */}
-      <FadeSection visible={pct >= 85} align="center">
+      {/* PHASE 5: 85–100% */}
+      <FadeSection visible={pct >= 85} align="center" isMobile={isMobile}>
         <div style={{ textAlign: 'center' }}>
-          <h2 style={{ ...styles.headlineWhite, fontSize: 'clamp(52px,8vw,120px)', marginBottom: '0' }}>
+          <h2 style={{
+            ...styles.headlineWhite,
+            fontSize: isMobile ? 'clamp(36px,9vw,56px)' : 'clamp(48px,7vw,100px)',
+            marginBottom: 0,
+          }}>
             Don't just move.
           </h2>
-          <h2 style={{ ...styles.headlineLime, fontSize: 'clamp(52px,8vw,120px)', marginBottom: '32px' }}>
+          <h2 style={{
+            ...styles.headlineLime,
+            fontSize: isMobile ? 'clamp(36px,9vw,56px)' : 'clamp(48px,7vw,100px)',
+            marginBottom: isMobile ? '24px' : '32px',
+          }}>
             Ride.
           </h2>
-          <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', pointerEvents: 'all' }}>
-            <button style={styles.ctaPrimary}>Experience the Surge</button>
-            <button style={styles.ctaSecondary}>View the Science</button>
+          <div style={{
+            display: 'flex',
+            gap: '12px',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            pointerEvents: 'all',
+          }}>
+            <button style={{
+              ...styles.ctaPrimary,
+              fontSize: isMobile ? '10px' : '11px',
+              padding: isMobile ? '12px 20px' : '14px 26px',
+            }}>Experience the Surge</button>
+            <button style={{
+              ...styles.ctaSecondary,
+              fontSize: isMobile ? '10px' : '11px',
+              padding: isMobile ? '12px 20px' : '14px 26px',
+            }}>View the Science</button>
           </div>
         </div>
       </FadeSection>
@@ -135,30 +172,36 @@ function ScrollStoryText({ progress }) {
   )
 }
 
-// Fade section wrapper
-function FadeSection({ visible, align, children }) {
-  const alignMap = {
-    center: { left: '50%', transform: 'translateX(-50%)', width: 'max-content', maxWidth: '90vw' },
-    left:   { left: '6vw', maxWidth: '420px' },
-    right:  { right: '6vw', maxWidth: '420px' },
+function FadeSection({ visible, align, children, isMobile }) {
+  const padding = isMobile ? '5vw' : '6vw'
+  const maxW    = isMobile ? 'min(88vw, 360px)' : '440px'
+
+  const posMap = {
+    center: {
+      left: '50%',
+      width: isMobile ? '92vw' : 'min(80vw, 900px)',
+      marginLeft: isMobile ? '-46vw' : 'calc(-1 * min(40vw, 450px))',
+    },
+    left:  { left: padding, maxWidth: maxW },
+    right: { right: padding, maxWidth: maxW },
   }
+
+  const baseTransform = 'translateY(-50%)'
 
   return (
     <motion.div
       animate={{
         opacity: visible ? 1 : 0,
-        y: visible ? 0 : (visible === false ? -20 : 20),
+        y: visible ? 0 : 16,
         filter: visible ? 'blur(0px)' : 'blur(8px)',
       }}
       transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
       style={{
         position: 'absolute',
         top: '50%',
-        transform: alignMap[align]?.transform
-          ? `translateY(-50%) ${alignMap[align].transform}`
-          : 'translateY(-50%)',
-        ...alignMap[align],
+        transform: baseTransform,
         pointerEvents: visible ? 'all' : 'none',
+        ...posMap[align],
       }}
     >
       {children}
@@ -175,13 +218,12 @@ const styles = {
     letterSpacing: '0.22em',
     color: '#C1FF00',
     textTransform: 'uppercase',
-    marginBottom: '16px',
+    marginBottom: '14px',
   },
   hero: {
     fontFamily: "'Inter', sans-serif",
     fontWeight: 900,
     fontStyle: 'italic',
-    fontSize: 'clamp(80px, 12vw, 160px)',
     lineHeight: 0.88,
     letterSpacing: '-0.05em',
     color: '#F5F5F5',
@@ -191,7 +233,6 @@ const styles = {
   tagline: {
     fontFamily: "'Inter', sans-serif",
     fontWeight: 300,
-    fontSize: 'clamp(14px, 1.8vw, 22px)',
     letterSpacing: '0.1em',
     color: 'rgba(245,245,245,0.35)',
     textTransform: 'uppercase',
@@ -232,37 +273,35 @@ const styles = {
   sub: {
     fontFamily: "'Inter', sans-serif",
     fontWeight: 400,
-    fontSize: 'clamp(13px, 1.2vw, 16px)',
+    fontSize: 'clamp(12px, 1.2vw, 15px)',
     lineHeight: 1.7,
     letterSpacing: '0.01em',
     color: 'rgba(245,245,245,0.5)',
-    maxWidth: '380px',
+    maxWidth: '360px',
   },
   ctaPrimary: {
     fontFamily: "'Inter', sans-serif",
     fontWeight: 700,
-    fontSize: '11px',
-    letterSpacing: '0.12em',
+    letterSpacing: '0.1em',
     textTransform: 'uppercase',
     color: '#030303',
     background: 'linear-gradient(135deg, #C1FF00, #8FFF00)',
     border: 'none',
-    padding: '14px 26px',
     borderRadius: '3px',
     cursor: 'pointer',
-    boxShadow: '0 0 30px rgba(193,255,0,0.35)',
+    boxShadow: '0 0 28px rgba(193,255,0,0.35)',
+    whiteSpace: 'nowrap',
   },
   ctaSecondary: {
     fontFamily: "'Inter', sans-serif",
     fontWeight: 500,
-    fontSize: '11px',
-    letterSpacing: '0.12em',
+    letterSpacing: '0.1em',
     textTransform: 'uppercase',
     color: 'rgba(245,245,245,0.55)',
     background: 'transparent',
     border: '1px solid rgba(245,245,245,0.12)',
-    padding: '14px 26px',
     borderRadius: '3px',
     cursor: 'pointer',
+    whiteSpace: 'nowrap',
   },
 }

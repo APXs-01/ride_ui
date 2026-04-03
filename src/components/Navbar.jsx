@@ -1,15 +1,21 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 
 const NAV_LINKS = ['Fuel', 'Science', 'Flavors', 'Shop']
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
+    const onResize = () => setIsMobile(window.innerWidth < 768)
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    window.addEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onResize)
+    }
   }, [])
 
   return (
@@ -26,11 +32,9 @@ export default function Navbar() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 40px',
-        height: '68px',
-        background: scrolled
-          ? 'rgba(3,3,3,0.78)'
-          : 'rgba(3,3,3,0.4)',
+        padding: isMobile ? '0 20px' : '0 40px',
+        height: '62px',
+        background: scrolled ? 'rgba(3,3,3,0.82)' : 'rgba(3,3,3,0.4)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         borderBottom: scrolled
@@ -49,63 +53,67 @@ export default function Navbar() {
         color: '#F5F5F5',
         cursor: 'pointer',
         userSelect: 'none',
+        flexShrink: 0,
       }}>
         RIDE
       </span>
 
-      {/* Center links */}
-      <ul style={{
-        display: 'flex',
-        gap: '36px',
-        listStyle: 'none',
-        position: 'absolute',
-        left: '50%',
-        transform: 'translateX(-50%)',
-      }}>
-        {NAV_LINKS.map((link) => (
-          <li key={link}>
-            <a href="#" style={{
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 500,
-              fontSize: '13px',
-              letterSpacing: '0.04em',
-              color: 'rgba(245,245,245,0.6)',
-              textDecoration: 'none',
-              textTransform: 'uppercase',
-              transition: 'color 0.2s ease',
-            }}
-            onMouseEnter={e => e.target.style.color = '#C1FF00'}
-            onMouseLeave={e => e.target.style.color = 'rgba(245,245,245,0.6)'}
-            >
-              {link}
-            </a>
-          </li>
-        ))}
-      </ul>
+      {/* Center links — hidden on mobile */}
+      {!isMobile && (
+        <ul style={{
+          display: 'flex',
+          gap: '36px',
+          listStyle: 'none',
+          position: 'absolute',
+          left: '50%',
+          transform: 'translateX(-50%)',
+        }}>
+          {NAV_LINKS.map((link) => (
+            <li key={link}>
+              <a href="#" style={{
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 500,
+                fontSize: '12px',
+                letterSpacing: '0.06em',
+                color: 'rgba(245,245,245,0.6)',
+                textDecoration: 'none',
+                textTransform: 'uppercase',
+                transition: 'color 0.2s ease',
+              }}
+              onMouseEnter={e => e.target.style.color = '#C1FF00'}
+              onMouseLeave={e => e.target.style.color = 'rgba(245,245,245,0.6)'}
+              >
+                {link}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {/* CTA */}
       <button style={{
         fontFamily: "'Inter', sans-serif",
         fontWeight: 700,
-        fontSize: '12px',
+        fontSize: isMobile ? '10px' : '12px',
         letterSpacing: '0.08em',
         textTransform: 'uppercase',
         color: '#030303',
         background: 'linear-gradient(135deg, #C1FF00, #8FFF00)',
         border: 'none',
-        padding: '10px 20px',
+        padding: isMobile ? '9px 14px' : '10px 20px',
         borderRadius: '4px',
         cursor: 'pointer',
         boxShadow: '0 0 20px rgba(193,255,0,0.25)',
         transition: 'box-shadow 0.3s ease, transform 0.2s ease',
+        flexShrink: 0,
       }}
       onMouseEnter={e => {
-        e.target.style.boxShadow = '0 0 35px rgba(193,255,0,0.5)'
-        e.target.style.transform = 'scale(1.03)'
+        e.currentTarget.style.boxShadow = '0 0 35px rgba(193,255,0,0.5)'
+        e.currentTarget.style.transform = 'scale(1.03)'
       }}
       onMouseLeave={e => {
-        e.target.style.boxShadow = '0 0 20px rgba(193,255,0,0.25)'
-        e.target.style.transform = 'scale(1)'
+        e.currentTarget.style.boxShadow = '0 0 20px rgba(193,255,0,0.25)'
+        e.currentTarget.style.transform = 'scale(1)'
       }}
       >
         GET FUELED
